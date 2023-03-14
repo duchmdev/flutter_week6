@@ -10,32 +10,35 @@ import AVFoundation
   ) -> Bool {
     
     let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
-    let audioChannel = FlutterMethodChannel(name: "audio_player",
-                                              binaryMessenger: controller.binaryMessenger)
-    var player = AVAudioPlayer()
+    let audioChannel = FlutterMethodChannel(name: "audio_player", binaryMessenger: controller.binaryMessenger)
+    
+    var player : AVAudioPlayer?
+
     audioChannel.setMethodCallHandler({
       (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
       // This method is invoked on the UI thread.
       // Handle battery messages.
       switch call.method {
         case "play":
-         let url:String
-             if let args = call.arguments as? Dictionary<String, Any>,
+            if let args = call.arguments as? Dictionary<String, Any>,
                 let urlString = args["url"] as? String{
-                    url = urlString
-              }
-            if (url != nil) {
-                let session = AVAudioSession.sharedInstance()
-                do {
-                    try session.setCategory(.playback, mode: .default, options: [])
-                    try session.setActive(true)
-                    player = try AVAudioPlayer(contentsOf: url)
-                    player?.play()
-                    result("success")
-                } catch {
-                    result("error")
+                print(urlString);
+                if let url = URL(string: urlString)
+                {
+                    let session = AVAudioSession.sharedInstance()
+                    do {
+                        try session.setCategory(.playback, mode: .default, options: [])
+                        try session.setActive(true)
+                        player = try AVAudioPlayer(contentsOf: url)
+
+                        player?.play()
+                        result("success")
+                    } catch {
+                        result("error")
+                    }
                 }
-            } else {
+            }
+            else {
                 result("error")
             }
         case "pause":
